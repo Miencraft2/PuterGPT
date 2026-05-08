@@ -197,12 +197,11 @@ export async function loadSettingsFromDB() {
             setState((state) => ({
                 config: { ...state.config, ...configUpdates }
             }));
-            
-            // Apply theme if it was loaded
-            if (savedTheme) {
-                applyTheme(savedTheme.value);
-            }
         }
+        
+        // Always apply theme - use saved theme if exists, otherwise default to 'dark'
+        const themeToApply = savedTheme ? savedTheme.value : 'dark';
+        applyTheme(themeToApply);
 
         // Set original settings for comparison using the loaded values
         setState({
@@ -217,6 +216,9 @@ export async function loadSettingsFromDB() {
         });
     } catch (error) {
         console.error('Failed to load settings from DB:', error);
+        
+        // Apply default theme even when database loading fails
+        applyTheme('dark');
         
         // Show user feedback for critical errors
         if (error.name === 'QuotaExceededError') {
