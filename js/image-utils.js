@@ -73,7 +73,7 @@ export const imageUtils = {
     // Handle drag and drop
     handleDragOver(event) {
         event.preventDefault();
-        event.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        event.currentTarget.style.backgroundColor = 'var(--hover-light)';
     },
 
     handleDragLeave(event) {

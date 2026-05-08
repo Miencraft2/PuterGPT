@@ -5,7 +5,7 @@
     left: 0; 
     right: 0; 
     bottom: 0; 
-    background: rgba(0,0,0,0.7); 
+    background: var(--modal-overlay); 
     display: flex; 
     align-items: center;
     justify-content: center;
@@ -34,7 +34,7 @@
 
 /* Custom scrollbar for settings modal */
 .modal::-webkit-scrollbar {
-    width: 8px;
+    width: var(--scrollbar-width-modal);
 }
 
 .modal::-webkit-scrollbar-track {
@@ -87,7 +87,7 @@ select, input[type="text"], input[type="password"] {
 }
 
 select:focus, input[type="text"]:focus, input[type="password"]:focus {
-    border-color: #404040;
+    border-color: var(--focus-border);
     outline: none;
 }
 
