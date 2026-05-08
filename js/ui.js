@@ -1,7 +1,7 @@
 import { els, state, hasSettingsChanged, resetSettingsToOriginal } from './state.js';
 import { loadSavedChats } from './storage.js';
 import { db } from './indexeddb-storage.js';
-import { setState, getState, subscribe } from './store.js';
+import { setState, getState, subscribe, themeDefinitions } from './store.js';
 
 // Set up reactive subscription to update image preview when attached images change
 subscribe((newState, prevState) => {
@@ -141,7 +141,8 @@ window.openSettings = () => {
         modelId: els.modelSelect.value,
         autoScroll: els.autoScroll.checked,
         tokenRotation: els.tokenRotation.checked,
-        enableWebSearch: els.enableWebSearch ? els.enableWebSearch.checked : false
+        enableWebSearch: els.enableWebSearch ? els.enableWebSearch.checked : false,
+        theme: els.themeSelect ? els.themeSelect.value : 'dark'
     };
     setState({ originalSettings: currentSettings });
 };
@@ -172,6 +173,12 @@ window.discardChangesAndClose = async () => {
     await db.settings.put({ key: 'auto_scroll', value: currentState.originalSettings.autoScroll });
     await db.settings.put({ key: 'token_rotation', value: currentState.originalSettings.tokenRotation });
     await db.settings.put({ key: 'enable_web_search', value: currentState.originalSettings.enableWebSearch });
+    await db.settings.put({ key: 'theme', value: currentState.originalSettings.theme });
+    
+    // Apply the original theme
+    const { applyTheme } = await import('./state.js');
+    applyTheme(currentState.originalSettings.theme);
+    
     els.settingsModal.classList.remove('active');
     els.settingsConfirmModal.classList.remove('active');
     showToast("Changes discarded");
@@ -199,4 +206,99 @@ window.saveSettings = async () => {
     els.settingsModal.classList.remove('active');
     els.settingsConfirmModal.classList.remove('active');
     showToast("Settings saved");
+};
+
+// Delete theme modal functions
+window.openDeleteThemeModal = () => {
+    els.deleteThemeModal.classList.add('active');
+};
+
+window.closeDeleteThemeModal = () => {
+    els.deleteThemeModal.classList.remove('active');
+};
+
+window.deleteCustomTheme = () => {
+    const currentTheme = state.config.theme;
+    
+    // Don't allow deleting dark or light themes
+    if (currentTheme === 'dark' || currentTheme === 'light') {
+        showToast('Cannot delete built-in themes', 'error');
+        return;
+    }
+    
+    // Check if it's a custom theme
+    if (!currentTheme || !currentTheme.startsWith('custom-')) {
+        showToast('No custom theme selected', 'error');
+        return;
+    }
+    
+    // Open confirmation modal
+    openDeleteThemeModal();
+};
+
+window.confirmDeleteTheme = async () => {
+    const currentTheme = state.config.theme;
+    
+    // Don't allow deleting dark or light themes
+    if (currentTheme === 'dark' || currentTheme === 'light') {
+        showToast('Cannot delete built-in themes', 'error');
+        return;
+    }
+    
+    // Check if it's a custom theme
+    if (!currentTheme || !currentTheme.startsWith('custom-')) {
+        showToast('No custom theme selected', 'error');
+        return;
+    }
+    
+    // Execute theme's onRemove JavaScript to clean up effects before deletion
+    if (themeDefinitions[currentTheme]?.javascript?.onRemove) {
+        try {
+            // Import the executeThemeJS function from state.js
+            const { executeThemeJS } = await import('./state.js');
+            executeThemeJS(
+                themeDefinitions[currentTheme].javascript.onRemove,
+                currentTheme,
+                'onRemove'
+            );
+        } catch (error) {
+            console.error('Failed to execute theme cleanup:', error);
+        }
+    }
+    
+    // Delete from theme definitions
+    delete themeDefinitions[currentTheme];
+    
+    // Delete from localStorage
+    const customThemes = JSON.parse(localStorage.getItem('customThemes') || '{}');
+    delete customThemes[currentTheme];
+    localStorage.setItem('customThemes', JSON.stringify(customThemes));
+    
+    // Delete from IndexedDB
+    const { db } = await import('./indexeddb-storage.js');
+    const savedThemes = await db.settings.get('customThemes');
+    if (savedThemes && savedThemes.value) {
+        delete savedThemes.value[currentTheme];
+        await db.settings.put({ key: 'customThemes', value: savedThemes.value });
+    }
+    
+    // Reset to dark theme
+    const { setState } = await import('./store.js');
+    setState((state) => ({
+        config: { ...state.config, theme: 'dark' }
+    }));
+    await db.settings.put({ key: 'theme', value: 'dark' });
+    
+    // Apply dark theme
+    const { applyTheme } = await import('./state.js');
+    applyTheme('dark');
+    
+    // Update dropdown
+    const { populateThemeDropdown } = await import('./app.js');
+    populateThemeDropdown();
+    
+    // Close modal
+    closeDeleteThemeModal();
+    
+    showToast('Custom theme deleted successfully', 'success');
 };

@@ -1,6 +1,6 @@
 // State Management Module - Updated to use Zustand-like store
 import { db } from './indexeddb-storage.js';
-import { getState, setState } from './store.js';
+import { getState, setState, themeDefinitions } from './store.js';
 
 // Backward compatibility - export state proxy that mirrors store state
 export const state = new Proxy({}, {
@@ -36,15 +36,152 @@ export const state = new Proxy({}, {
   }
 });
 
+// Enhanced Safe JavaScript execution for themes
+export function executeThemeJS(code, themeName, hookName) {
+    try {
+        // Create a more powerful but safe execution context
+        const themeUtils = {
+            // Utility functions for theme manipulation
+            addClass: (selector, className) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.classList.add(className));
+            },
+            removeClass: (selector, className) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.classList.remove(className));
+            },
+            toggleClass: (selector, className) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.classList.toggle(className));
+            },
+            // Animation utilities
+            addAnimation: (selector, animation) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.style.animation = animation);
+            },
+            removeAnimation: (selector) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.style.animation = '');
+            },
+            // Style utilities
+            setCSSVar: (varName, value) => {
+                document.documentElement.style.setProperty(varName, value);
+            },
+            getCSSVar: (varName) => {
+                return getComputedStyle(document.documentElement).getPropertyValue(varName);
+            },
+            // Element utilities
+            createElement: (tag, attributes, text) => {
+                const element = document.createElement(tag);
+                if (attributes) {
+                    Object.entries(attributes).forEach(([key, value]) => {
+                        element.setAttribute(key, value);
+                    });
+                }
+                if (text) element.textContent = text;
+                return element;
+            },
+            appendTo: (selector, element) => {
+                const target = document.querySelector(selector);
+                if (target) target.appendChild(element);
+            },
+            removeFrom: (selector) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.remove());
+            },
+            // Event utilities
+            addEventListener: (selector, event, handler) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.addEventListener(event, handler));
+            },
+            removeEventListener: (selector, event, handler) => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.removeEventListener(event, handler));
+            },
+            // Storage for theme-specific data
+            storage: {
+                get: (key) => localStorage.getItem(`theme_${themeName}_${key}`),
+                set: (key, value) => localStorage.setItem(`theme_${themeName}_${key}`, value),
+                remove: (key) => localStorage.removeItem(`theme_${themeName}_${key}`)
+            }
+        };
+        
+        // Create a safe execution context with enhanced capabilities
+        const safeFunction = new Function(
+            'document', 'window', 'console', 'setTimeout', 'setInterval', 'clearInterval', 'clearTimeout',
+            'themeUtils', 'Math', 'Date', 'JSON', 'localStorage', 'sessionStorage',
+            `
+            "use strict";
+            ${code}
+            `
+        );
+        
+        // Execute with enhanced context
+        safeFunction(
+            document, window, console, setTimeout, setInterval, clearInterval, clearTimeout,
+            themeUtils, Math, Date, JSON, localStorage, sessionStorage
+        );
+        
+        console.log(`✅ Theme "${themeName}" ${hookName} executed successfully`);
+    } catch (error) {
+        console.error(`❌ Theme "${themeName}" ${hookName} failed:`, error);
+        // Show user feedback for JavaScript errors
+        if (typeof showToast === 'function') {
+            showToast(`Theme effect failed: ${error.message}`, 'error');
+        }
+    }
+}
+
+// Apply theme to document
+export function applyTheme(theme) {
+    const root = document.documentElement;
+    
+    // Clean up previous theme's JavaScript if it exists
+    const previousTheme = window.currentTheme;
+    if (previousTheme && themeDefinitions[previousTheme]?.javascript?.onRemove) {
+        executeThemeJS(
+            themeDefinitions[previousTheme].javascript.onRemove,
+            previousTheme,
+            'onRemove'
+        );
+    }
+    
+    // Remove any existing theme attribute
+    root.removeAttribute('data-theme');
+    
+    // Apply theme CSS variables if theme exists
+    if (themeDefinitions[theme]) {
+        const themeConfig = themeDefinitions[theme];
+        
+        // Apply CSS variables
+        Object.entries(themeConfig.cssVars).forEach(([property, value]) => {
+            root.style.setProperty(property, value);
+        });
+        
+        // Execute theme's onApply JavaScript if it exists
+        if (themeConfig.javascript?.onApply) {
+            executeThemeJS(
+                themeConfig.javascript.onApply,
+                theme,
+                'onApply'
+            );
+        }
+        
+        // Store current theme for cleanup
+        window.currentTheme = theme;
+    }
+}
+
 // Async function to load settings from IndexedDB
 export async function loadSettingsFromDB() {
     try {
-        const [savedPrompt, savedScroll, savedModel, savedRotation, savedWebSearch] = await Promise.all([
+        const [savedPrompt, savedScroll, savedModel, savedRotation, savedWebSearch, savedTheme] = await Promise.all([
             db.settings.get('system_prompt'),
             db.settings.get('auto_scroll'),
             db.settings.get('model'),
             db.settings.get('token_rotation'),
-            db.settings.get('enable_web_search')
+            db.settings.get('enable_web_search'),
+            db.settings.get('theme')
         ]);
 
         const configUpdates = {};
@@ -53,18 +190,30 @@ export async function loadSettingsFromDB() {
         if (savedModel) configUpdates.modelId = savedModel.value;
         if (savedRotation !== undefined) configUpdates.tokenRotation = savedRotation.value;
         if (savedWebSearch !== undefined) configUpdates.enableWebSearch = savedWebSearch.value;
+        if (savedTheme) configUpdates.theme = savedTheme.value;
 
         // Update config through store
         if (Object.keys(configUpdates).length > 0) {
             setState((state) => ({
                 config: { ...state.config, ...configUpdates }
             }));
+            
+            // Apply theme if it was loaded
+            if (savedTheme) {
+                applyTheme(savedTheme.value);
+            }
         }
 
-        // Also update original settings for comparison
-        const currentState = getState();
+        // Set original settings for comparison using the loaded values
         setState({
-            originalSettings: { ...currentState.config }
+            originalSettings: {
+                systemPrompt: savedPrompt?.value || '',
+                modelId: savedModel?.value || '',
+                autoScroll: savedScroll?.value !== undefined ? savedScroll.value : false,
+                tokenRotation: savedRotation?.value !== undefined ? savedRotation.value : false,
+                enableWebSearch: savedWebSearch?.value !== undefined ? savedWebSearch.value : false,
+                theme: savedTheme?.value || 'dark'
+            }
         });
     } catch (error) {
         console.error('Failed to load settings from DB:', error);
@@ -96,6 +245,7 @@ export const els = {
     freeOnlyFilter: document.getElementById('free-only-filter'),
     modelCostDisplay: document.getElementById('model-cost-display'),
     systemPrompt: document.getElementById('system-prompt'),
+    themeSelect: document.getElementById('theme-select'),
     settingsModal: document.getElementById('settings-modal'),
     settingsConfirmModal: document.getElementById('settings-confirm-modal'),
     toast: document.getElementById('toast'),
@@ -112,6 +262,14 @@ export const els = {
     importTokensBtn: document.getElementById('import-tokens-btn'),
     exportTokensBtn: document.getElementById('export-tokens-btn'),
     tokenGuideBtn: document.getElementById('token-guide-btn'),
+    // Theme generator elements
+    themeGeneratorModal: document.getElementById('theme-generator-modal'),
+    themePrompt: document.getElementById('theme-prompt'),
+    generateJavaScript: document.getElementById('generate-javascript'),
+    themeModelSelect: document.getElementById('theme-model-select'),
+    themeModelSearch: document.getElementById('theme-model-search'),
+    themeFreeOnly: document.getElementById('theme-free-only'),
+    deleteThemeModal: document.getElementById('delete-theme-modal'),
     // Search elements (will be created dynamically)
     searchModal: null,
     searchInput: null,
@@ -125,6 +283,7 @@ export function hasSettingsChanged() {
     const currentAutoScroll = els.autoScroll.checked;
     const currentTokenRotation = els.tokenRotation.checked;
     const currentEnableWebSearch = els.enableWebSearch ? els.enableWebSearch.checked : false;
+    const currentTheme = els.themeSelect ? els.themeSelect.value : 'dark';
     
     const currentState = getState();
     
@@ -133,7 +292,8 @@ export function hasSettingsChanged() {
         currentModelId !== currentState.originalSettings.modelId ||
         currentAutoScroll !== currentState.originalSettings.autoScroll ||
         currentTokenRotation !== currentState.originalSettings.tokenRotation ||
-        currentEnableWebSearch !== currentState.originalSettings.enableWebSearch
+        currentEnableWebSearch !== currentState.originalSettings.enableWebSearch ||
+        currentTheme !== currentState.originalSettings.theme
     );
 }
 
@@ -145,4 +305,5 @@ export function resetSettingsToOriginal() {
     els.autoScroll.checked = currentState.originalSettings.autoScroll;
     els.tokenRotation.checked = currentState.originalSettings.tokenRotation;
     if (els.enableWebSearch) els.enableWebSearch.checked = currentState.originalSettings.enableWebSearch;
+    if (els.themeSelect) els.themeSelect.value = currentState.originalSettings.theme;
 }

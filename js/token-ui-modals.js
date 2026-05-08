@@ -63,8 +63,8 @@ export function importTokens() {
             <p style="margin-bottom: 15px;">Paste exported token JSON you copied previously into the box below. This will add them to your current list.</p>
             <textarea id="import-token-json" placeholder='[{"tokenName": "...", "value": "...", "disabled": false}, ...]' style="height: 150px; font-family: monospace; font-size: 12px; margin-bottom: 15px; width: 100%; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); padding: 8px; resize: vertical;"></textarea>
             <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn" id="cancel-import-btn" style="background-color: #ef4444;">Cancel</button>
-                <button class="btn primary" id="confirm-import-btn" style="background-color: #10b981;">Import Tokens</button>
+                <button class="btn" id="cancel-import-btn" style="background-color: var(--danger);">Cancel</button>
+                <button class="btn primary" id="confirm-import-btn" style="background-color: var(--accent);">Import Tokens</button>
             </div>
         </div>
     `;
@@ -133,15 +133,15 @@ export async function exportTokens() {
         modal.className = 'modal-overlay';
         modal.innerHTML = `
             <div class="modal">
-                <h3 style="color: #f59e0b; margin-bottom: 15px;">
+                <h3 style="color: var(--warning); margin-bottom: 15px;">
                     <i class="material-icons-outlined" style="vertical-align: middle; margin-right: 8px;">warning</i>
                     Security Warning
                 </h3>
                 <p style="margin-bottom: 15px;">You are about to copy your API tokens to your clipboard. Tokens grant access to your AI models and credits.</p>
                 <p style="margin-bottom: 20px;"><strong>Never share these tokens</strong> with anyone you don't trust. Ensure you are in a private environment before proceeding.</p>
                 <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
-                    <button class="btn" id="cancel-export-btn" style="background-color: #ef4444;">Cancel</button>
-                    <button class="btn primary" id="confirm-export-btn" style="background-color: #10b981;">I Understand, Copy Now</button>
+                    <button class="btn" id="cancel-export-btn" style="background-color: var(--danger);">Cancel</button>
+                    <button class="btn primary" id="confirm-export-btn" style="background-color: var(--accent);">I Understand, Copy Now</button>
                 </div>
             </div>
         `;

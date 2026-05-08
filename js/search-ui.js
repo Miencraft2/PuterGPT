@@ -35,7 +35,7 @@ class SearchUI {
                     <h3>
                         <span class="material-icons-outlined">search</span>
                         Advanced Search
-                        <span style="font-size: 0.7rem; background: var(--warning-color, #ff9800); color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">Experimental</span>
+                        <span style="font-size: 0.7rem; background: var(--warning); color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">Experimental</span>
                     </h3>
                     
                     <div class="search-input-section">

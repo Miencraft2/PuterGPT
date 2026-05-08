@@ -41,8 +41,8 @@
 }
 
 .avatar { 
-    width: 32px; 
-    height: 32px; 
+    width: var(--avatar-size); 
+    height: var(--avatar-size); 
     border-radius: var(--radius-sm); 
     display: flex; 
     align-items: center; 
@@ -52,7 +52,7 @@
 }
 
 .avatar.user { 
-    background-color: #5436da; 
+    background-color: var(--user-avatar-bg); 
 }
 
 .avatar.ai { 

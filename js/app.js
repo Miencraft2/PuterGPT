@@ -4,9 +4,36 @@ import { loadModels, filterModels, updateCostDisplay } from './models.js';
 import { loadSavedChats } from './storage.js';
 import { initializeTokenManagement } from './token-ui.js';
 import { migrateFromLocalStorage, db } from './indexeddb-storage.js';
-import { setState, subscribe } from './store.js';
+import { setState, subscribe, themeDefinitions } from './store.js';
 import { deepDiff } from './utils.js';
 import './search-ui.js'; // Initializes search UI globally
+import './theme-generator.js'; // Initialize theme generator
+import { loadCustomThemes, handleThemeSelectChange } from './theme-generator.js';
+
+// Populate theme dropdown dynamically
+export function populateThemeDropdown() {
+    if (!els.themeSelect) return;
+    
+    // Clear existing options
+    els.themeSelect.innerHTML = '';
+    
+    // Debug: log theme definitions
+    console.log('Populating dropdown with themes:', Object.keys(themeDefinitions));
+    
+    // Add theme options from themeDefinitions
+    Object.entries(themeDefinitions).forEach(([key, theme]) => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = theme.name;
+        els.themeSelect.appendChild(option);
+    });
+    
+    // Add custom theme generator option
+    const customOption = document.createElement('option');
+    customOption.value = 'generate-custom';
+    customOption.textContent = '🎨 Generate custom theme...';
+    els.themeSelect.appendChild(customOption);
+}
 
 // Main Application Initialization
 window.addEventListener('load', async () => {
@@ -18,6 +45,14 @@ window.addEventListener('load', async () => {
 
     // Initialize Token Management first
     await initializeTokenManagement();
+    
+    // Load custom themes
+    console.log('Loading custom themes...');
+    await loadCustomThemes();
+    console.log('Custom themes loaded, themeDefinitions now:', Object.keys(themeDefinitions));
+    
+    // Populate theme dropdown
+    populateThemeDropdown();
     
     // Set up reactive state subscriptions
     subscribe((newState, prevState) => {
@@ -48,6 +83,20 @@ window.addEventListener('load', async () => {
             if (els.enableWebSearch) els.enableWebSearch.checked = newState.config.enableWebSearch;
         }
 
+        // Update theme select when config changes
+        if (newState.config?.theme !== prevState.config?.theme) {
+            if (els.themeSelect) els.themeSelect.value = newState.config.theme;
+            // Apply theme to document
+            import('./state.js').then(m => m.applyTheme(newState.config.theme));
+        }
+        
+        // Show/hide delete theme button based on theme type
+        const deleteBtn = document.getElementById('delete-theme-btn');
+        if (deleteBtn) {
+            const isCustomTheme = newState.config?.theme?.startsWith('custom-');
+            deleteBtn.style.display = isCustomTheme ? 'block' : 'none';
+        }
+
         // Update send button icon based on operation state
         const isGenerating = newState.lastOperationId && 
                            newState.messages.some(m => m.role === 'assistant' && m.content === '');
@@ -67,6 +116,7 @@ window.addEventListener('load', async () => {
     els.systemPrompt.value = state.config.systemPrompt;
     els.autoScroll.checked = state.config.autoScroll;
     if (els.enableWebSearch) els.enableWebSearch.checked = state.config.enableWebSearch;
+    if (els.themeSelect) els.themeSelect.value = state.config.theme;
     
     // Load Chats and Models
     await loadSavedChats();
@@ -105,6 +155,41 @@ window.addEventListener('load', async () => {
                 config: { ...state.config, enableWebSearch: e.target.checked }
             }));
             await db.settings.put({ key: 'enable_web_search', value: e.target.checked });
+        });
+    }
+    
+    // Theme select event listener
+    if (els.themeSelect) {
+        els.themeSelect.addEventListener('change', async (e) => {
+            // Handle custom theme generation option
+            if (e.target.value === 'generate-custom') {
+                handleThemeSelectChange(e);
+                return;
+            }
+            
+            setState((state) => ({
+                config: { ...state.config, theme: e.target.value }
+            }));
+            await db.settings.put({ key: 'theme', value: e.target.value });
+            // Apply theme immediately
+            import('./state.js').then(m => m.applyTheme(e.target.value));
+        });
+    }
+    
+    // Theme generator event listeners
+    if (els.themeModelSearch) {
+        els.themeModelSearch.addEventListener('input', () => {
+            if (typeof filterThemeModels === 'function') {
+                filterThemeModels();
+            }
+        });
+    }
+    
+    if (els.themeFreeOnly) {
+        els.themeFreeOnly.addEventListener('change', () => {
+            if (typeof filterThemeModels === 'function') {
+                filterThemeModels();
+            }
         });
     }
 });

@@ -4,7 +4,7 @@
     bottom: 0; 
     left: 0; 
     right: 0; 
-    background: linear-gradient(180deg, rgba(13, 13, 13, 0), var(--bg-primary) 50%); 
+    background: linear-gradient(180deg, var(--gradient-start), var(--bg-primary) 50%); 
     padding: 1.5rem 1.5rem 2.5rem 1.5rem; 
     display: flex; 
     flex-direction: column;
@@ -16,7 +16,7 @@
     width: 100%; 
     max-width: 768px; 
     background-color: var(--input-bg); 
-    border-radius: 26px; 
+    border-radius: var(--input-border-radius); 
     border: 1px solid var(--border-color); 
     box-shadow: var(--shadow-md); 
     display: flex; 
@@ -25,7 +25,7 @@
 }
 
 .input-wrapper:focus-within {
-    border-color: #404040;
+    border-color: var(--focus-border);
 }
 
 textarea { 
@@ -82,7 +82,7 @@ textarea {
 }
 
 #image-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--hover-light);
     color: var(--text-primary);
 }
 
@@ -134,5 +134,5 @@ textarea {
 }
 
 .image-item .remove-image:hover {
-    background: #dc2626;
+    background: var(--danger-hover);
 }

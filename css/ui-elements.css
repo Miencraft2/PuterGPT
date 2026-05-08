@@ -15,8 +15,8 @@
 }
 
 .btn:hover { 
-    background-color: #262626; 
-    border-color: #404040;
+    background-color: var(--btn-hover-bg); 
+    border-color: var(--btn-hover-border);
 }
 
 .btn.primary { 
@@ -26,17 +26,17 @@
 }
 
 .btn.primary:hover { 
-    background-color: #e5e5e5; 
+    background-color: var(--btn-primary-hover-bg); 
 }
 
 .btn.danger { 
-    background-color: rgba(239, 68, 68, 0.1); 
+    background-color: var(--danger-bg); 
     color: var(--danger); 
-    border-color: rgba(239, 68, 68, 0.2); 
+    border-color: var(--danger-border); 
 }
 
 .btn.danger:hover {
-    background-color: rgba(239, 68, 68, 0.2);
+    background-color: var(--danger-border);
 }
 
 .select-group { 
@@ -67,7 +67,7 @@ select, input[type="text"], input[type="password"], textarea {
 }
 
 select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
-    border-color: #404040;
+    border-color: var(--input-focus-border);
 }
 
 /* Model Cost Display */
@@ -82,8 +82,8 @@ select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:f
 }
 
 .model-cost-display:hover {
-    border-color: #404040;
-    background-color: rgba(64, 64, 64, 0.1);
+    border-color: var(--btn-hover-border);
+    background-color: var(--hover-overlay);
 }
 
 /* Message Cost Display */
@@ -92,6 +92,6 @@ select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:f
 }
 
 .message-cost:hover {
-    border-color: #404040;
-    background-color: rgba(64, 64, 64, 0.1);
+    border-color: var(--btn-hover-border);
+    background-color: var(--hover-overlay);
 }
