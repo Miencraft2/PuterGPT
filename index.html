@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuterGPT</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/message-actions.css">
+    <link rel="stylesheet" href="css/markdown.css">
+    <link rel="stylesheet" href="css/input.css">
+    <link rel="stylesheet" href="css/ui-elements.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/reasoning.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/token-management.css">
+    <link rel="stylesheet" href="css/search.css">
+</head>
+<body>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-toggle material-icons-outlined" onclick="toggleSidebar()">menu</button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="material-icons-outlined">smart_toy</span>
+                <strong>PuterGPT</strong>
+            </div>
+            <button class="search-toggle-btn" onclick="openSearchModal()" title="Search (Ctrl+Shift+F)">
+                <span class="material-icons-outlined">search</span>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <button class="btn primary" onclick="newChat()">
+                <span class="material-icons-outlined">add</span>
+                New Chat
+            </button>
+            
+            <button class="btn" onclick="importChat()">
+                <span class="material-icons-outlined">upload</span>
+                Import Chat
+            </button>
+            
+            <div style="height: 10px"></div>
+            
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 5px;">Saved Chats</div>
+            <div id="saved-chats-container" class="saved-chats-list">
+                <!-- Chat items injected here -->
+                <div style="padding:10px; color:var(--text-secondary); font-size:0.8rem; font-style:italic;">No saved chats yet. Start a new one!</div>
+            </div>
+
+            <div style="margin-top:auto">
+                <button class="btn" onclick="openSettings()">
+                    <span class="material-icons-outlined">settings</span>
+                    Settings & AI Config
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main id="main">
+        <div id="chat-container">
+            <!-- Messages will be injected here -->
+            <div class="message ai">
+                <div class="avatar ai"><span class="material-icons-outlined">smart_toy</span></div>
+                <div class="message-content">
+                    <p>Hello! I am your AI assistant. </p>
+                    <p>Please configure your API Tokens in Settings.</p>
+                    <p><em>Hover over messages to see the edit icon (pencil).</em></p>
+                    <div style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+                        <button class="btn primary" style="font-size:0.8rem;" onclick="openSettings()">
+                            <span class="material-icons-outlined" style="font-size:16px">settings</span> Configure Tokens
+                        </button>
+                        <button class="btn" style="font-size:0.8rem;" onclick="quickRegisterToken()">
+                            <span class="material-icons-outlined" style="font-size:16px">flash_on</span> Quick Register (via Puter)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="input-area">
+            <div class="input-wrapper">
+                <textarea id="user-input" placeholder="Send a message... (Shift+Enter for newline)" rows="1"></textarea>
+                <input type="file" id="image-input" accept="image/*" multiple style="display: none;">
+                <input type="file" id="import-input" accept=".json" style="display: none;">
+                <button id="image-btn" onclick="document.getElementById('image-input').click()" title="Attach Images"><span class="material-icons-outlined">image</span></button>
+                <button id="send-btn" onclick="handleSendButtonClick()"><span class="material-icons-outlined">send</span></button>
+            </div>
+            <div id="image-preview" class="image-preview" style="display: none;"></div>
+            <div style="position:absolute; bottom:5px; font-size:0.7rem; color:#888;">
+                Powered by Puter.ai API
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <h3>Settings & Configuration</h3>
+            
+            <div class="token-management-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label>Token Management</label>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn" style="font-size:0.7rem; padding:4px 8px;" onclick="showTokenGuide()" title="Token Guide">
+                            <span class="material-icons-outlined" style="font-size:14px">help</span> Guide
+                        </button>
+                        <button class="btn" style="font-size:0.7rem; padding:4px 8px;" onclick="importTokens()" title="Import Tokens">
+                            <span class="material-icons-outlined" style="font-size:14px">upload</span> Import
+                        </button>
+                        <button class="btn" style="font-size:0.7rem; padding:4px 8px;" onclick="exportTokens()" title="Export Tokens">
+                            <span class="material-icons-outlined" style="font-size:14px">download</span> Export
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="token-add-section" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    <input type="text" id="token-name" placeholder="Token name (e.g., 'Main Account')" style="width:100%; font-size:0.8rem; padding:6px;">
+                    <input type="password" id="token-value" placeholder="Enter your Puter authentication token" style="width:100%; font-size:0.8rem; padding:6px;">
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn primary" id="add-token-btn" onclick="addToken()" style="flex: 1; font-size:0.75rem; padding:6px 8px; justify-content: center;">
+                            <span class="material-icons-outlined" style="font-size:14px">add</span> Add
+                        </button>
+                        <button class="btn" id="quick-register-btn" onclick="quickRegisterToken()" style="flex: 1; font-size:0.75rem; padding:6px 8px; background-color: #10b981; justify-content: center;">
+                            <span class="material-icons-outlined" style="font-size:14px">flash_on</span> Quick Register (via Puter)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="token-rotation-section" style="margin-bottom: 15px;">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                        <input type="checkbox" id="token-rotation" onchange="toggleTokenRotation()"> Enable Token Rotation
+                    </label>
+                    <small style="color:#888">Automatically switch to next token when current one fails or hits limits.</small>
+                </div>
+
+                <div class="token-list-section">
+                    <div style="font-size:0.8rem; font-weight:600; margin-bottom:5px; color:var(--text-secondary);">Active Tokens</div>
+                    <div id="token-list" class="token-list">
+                        <!-- Tokens will be injected here -->
+                        <div style="padding:10px; color:var(--text-secondary); font-size:0.8rem; font-style:italic;">No tokens added yet. Add your first token above!</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin: 10px 0;">
+
+            <div class="select-group">
+                <label>AI Model</label>
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <button class="btn" style="font-size:0.7rem; padding:4px; width:auto;" onclick="refreshModels()" title="Fetch Models">
+                        <span class="material-icons-outlined" style="font-size:14px">refresh</span> Refresh
+                    </button>
+                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.75rem; white-space:nowrap;">
+                        <input type="checkbox" id="free-only-filter"> Free only
+                    </label>
+                    <input type="text" id="model-search" placeholder="Search models..." style="font-size:0.8rem; padding:4px;">
+                </div>
+                <select id="model-select"></select>
+                <div id="model-cost-display" class="model-cost-display" style="margin-top: 5px; font-size: 0.8rem; color: var(--text-secondary);"></div>
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-top: 10px;">
+                    <input type="checkbox" id="enable-web-search"> (Experimental) Enable web-search capabilities for search-enabled models
+                </label>
+            </div>
+
+            <div class="select-group">
+                <label>System Prompt</label>
+                <textarea id="system-prompt" rows="3" placeholder="You are a helpful assistant."></textarea>
+            </div>
+
+            <div class="select-group">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                    <input type="checkbox" id="auto-scroll" checked> Auto-scroll to bottom
+                </label>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                <button class="btn" onclick="closeSettings()">Close</button>
+                <button class="btn primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Confirmation Modal -->
+    <div class="modal-overlay" id="settings-confirm-modal">
+        <div class="modal" style="max-width: 400px;">
+            <h3>Discard Changes?</h3>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                You have unsaved changes. Do you want to discard them and close the settings?
+            </p>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn" onclick="cancelCloseSettings()">Keep Editing</button>
+                <button class="btn primary" onclick="discardChangesAndClose()">Discard Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="chat-context-menu" class="context-menu">
+        <div class="context-item" onclick="handleRenameChat()">
+            <span class="material-icons-outlined" style="font-size:18px">edit</span>
+            Rename
+        </div>
+        <div class="context-item" onclick="handleExportChat()">
+            <span class="material-icons-outlined" style="font-size:18px">download</span>
+            Export as JSON
+        </div>
+        <div class="context-item" onclick="handleShareChat()">
+            <span class="material-icons-outlined" style="font-size:18px">share</span>
+            Share Chat
+        </div>
+        <div class="context-item danger" onclick="handleDeleteChat()">
+            <span class="material-icons-outlined" style="font-size:18px">delete</span>
+            Delete
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+/* Base Styles */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: var(--font-sans); 
+}
+
+body { 
+    background-color: var(--bg-primary); 
+    color: var(--text-primary); 
+    height: 100vh; 
+    display: flex; 
+    overflow: hidden; 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

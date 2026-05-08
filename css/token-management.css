@@ -1,0 +1,340 @@
+/* Token Management Styles */
+.token-management-section {
+    margin-bottom: 20px;
+}
+
+.token-add-section {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.token-rotation-section {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.token-list-section {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.token-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.token-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.token-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.token-item.active {
+    border-color: var(--accent);
+    background: rgba(16, 163, 127, 0.1);
+}
+
+.token-item.failed {
+    border-color: var(--danger);
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.token-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.token-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.token-status {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.token-status.healthy {
+    background: var(--success);
+    color: white;
+}
+
+.token-status.failed {
+    background: var(--danger);
+    color: white;
+}
+
+.token-status.current {
+    background: var(--primary-color);
+    color: white;
+}
+
+.token-status.disabled {
+    background: #666;
+    color: white;
+}
+
+.token-item.disabled {
+    opacity: 0.6;
+    background: var(--bg-secondary);
+}
+
+.token-details {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.token-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.token-item:hover .token-actions {
+    opacity: 1;
+}
+
+.token-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.token-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.token-action-btn.delete:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.token-action-btn.edit:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.token-action-btn.disable:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.token-action-btn.enable:hover {
+    background: #10b981;
+    color: white;
+}
+
+/* Token statistics */
+.token-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.token-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.token-stat-label {
+    color: var(--text-secondary);
+}
+
+.token-stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Token guide modal */
+.token-guide-modal {
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.token-guide-content {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.token-guide-content h4 {
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.token-guide-content code {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Import/Export styles */
+.import-export-section {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-input-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.file-input-label:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-hover);
+}
+
+/* Quick register button */
+.quick-register-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quick-register-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .token-management-section {
+        margin-bottom: 16px;
+    }
+    
+    .token-item {
+        padding: 8px;
+    }
+    
+    .token-actions {
+        opacity: 1;
+    }
+    
+    .token-stats {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .import-export-section {
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+@keyframes tokenAdded {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.token-item.new {
+    animation: tokenAdded 0.3s ease-out;
+}
+
+@keyframes tokenFailed {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.token-item.failed {
+    animation: tokenFailed 0.5s ease-in-out;
+}
+
+/* Scrollbar styling for token list */
+.token-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.token-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.token-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.token-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}

@@ -1,0 +1,97 @@
+/* UI Elements */
+.btn { 
+    padding: 10px 16px; 
+    border-radius: var(--radius-md); 
+    border: 1px solid var(--border-color); 
+    background-color: var(--bg-secondary); 
+    color: var(--text-primary); 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    transition: all 0.2s ease; 
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.btn:hover { 
+    background-color: #262626; 
+    border-color: #404040;
+}
+
+.btn.primary { 
+    background-color: var(--text-primary); 
+    color: var(--bg-primary); 
+    border: none; 
+}
+
+.btn.primary:hover { 
+    background-color: #e5e5e5; 
+}
+
+.btn.danger { 
+    background-color: rgba(239, 68, 68, 0.1); 
+    color: var(--danger); 
+    border-color: rgba(239, 68, 68, 0.2); 
+}
+
+.btn.danger:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+.select-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    margin-bottom: 15px; 
+}
+
+label { 
+    font-size: 0.8rem; 
+    color: var(--text-secondary); 
+    font-weight: 600; 
+}
+
+select, input[type="text"], input[type="password"], textarea { 
+    background-color: var(--input-bg); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-primary); 
+    padding: 10px 12px; 
+    border-radius: var(--radius-md); 
+    outline: none; 
+    width: 100%; 
+    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    transition: border-color 0.2s ease;
+    resize: vertical;
+}
+
+select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    border-color: #404040;
+}
+
+/* Model Cost Display */
+.model-cost-display {
+    padding: 8px 12px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    line-height: 1.4;
+    transition: all 0.2s ease;
+}
+
+.model-cost-display:hover {
+    border-color: #404040;
+    background-color: rgba(64, 64, 64, 0.1);
+}
+
+/* Message Cost Display */
+.message-cost {
+    transition: all 0.2s ease;
+}
+
+.message-cost:hover {
+    border-color: #404040;
+    background-color: rgba(64, 64, 64, 0.1);
+}

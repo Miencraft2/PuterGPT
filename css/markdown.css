@@ -1,0 +1,88 @@
+/* Markdown Styles */
+.message-content pre, 
+.message-content pre *,
+.message-content code,
+.message-content code * { 
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important; 
+}
+
+.message-content pre { 
+    background: var(--bg-secondary); 
+    padding: 1rem; 
+    border-radius: var(--radius-md); 
+    margin: 12px 0; 
+    overflow-x: auto; 
+    border: 1px solid var(--border-color); 
+}
+
+.message-content code { 
+    font-size: 0.875rem;
+}
+
+.message-content p { 
+    margin-bottom: 12px; 
+    line-height: 1.75;
+}
+
+.message-content p:last-child { 
+    margin-bottom: 0; 
+}
+
+.message-content blockquote { 
+    border-left: 3px solid var(--accent); 
+    padding-left: 16px; 
+    color: var(--text-secondary); 
+    margin: 16px 0; 
+    font-style: italic;
+}
+
+/* Copy Button Styles */
+.code-block-wrapper {
+    position: relative;
+    margin: 10px 0;
+    border: none;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    z-index: 5;
+}
+
+.copy-btn:hover {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    color: var(--bg-primary);
+    opacity: 1;
+}
+
+.copy-btn.copied {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: white;
+    opacity: 1;
+}
+
+.copy-btn .material-icons-outlined {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Override existing pre margin to account for wrapper */
+.code-block-wrapper pre {
+    margin: 0;
+}
