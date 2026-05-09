@@ -172,6 +172,8 @@ export function applyTheme(theme) {
     }
 }
 
+applyTheme('dark');
+
 // Async function to load settings from IndexedDB
 export async function loadSettingsFromDB() {
     try {
