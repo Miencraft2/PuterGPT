@@ -46,7 +46,7 @@ A modern, feature-rich web-based chat application that integrates with the Puter
 ### Installation
 1. **Clone or Download** the repository:
    ```bash
-   git clone https://github.com/your-username/PuterGPT.git
+   git clone https://github.com/noname-isaidnoname/PuterGPT.git
    cd PuterGPT
    ```
 
@@ -65,43 +65,6 @@ A modern, feature-rich web-based chat application that integrates with the Puter
 3. Enter your Puter.ai API token
 4. Select your preferred AI model
 5. Start chatting!
-
-## 📁 Project Structure
-
-```
-PuterGPT/
-├── index.html              # Main application entry point
-├── README.md               # This file
-├── css/                    # Stylesheets
-│   ├── variables.css       # CSS custom properties
-│   ├── base.css           # Base styles and layout
-│   ├── sidebar.css        # Sidebar component styles
-│   ├── chat.css           # Chat interface styles
-│   ├── input.css          # Input area styles
-│   ├── modal.css          # Modal dialog styles
-│   ├── animations.css     # Transitions and keyframe animations
-│   ├── responsive.css     # Mobile responsiveness
-│   └── ...                # Other component styles
-├── js/                     # JavaScript modules
-│   ├── app.js             # Main application initialization
-│   ├── state.js           # State management and theme utilities
-│   ├── store.js           # Zustand-like store with theme definitions
-│   ├── chat-api.js        # API communication with Puter.ai
-│   ├── chat.js            # Chat functionality
-│   ├── chat-ui.js         # UI rendering and interactions
-│   ├── theme-generator.js # AI-powered custom theme generation
-│   ├── ui.js              # UI utilities and theme management
-│   ├── token-manager.js   # Token management system
-│   ├── token-ui.js        # Token UI components
-│   ├── storage.js         # Local storage operations
-│   ├── indexeddb-storage.js # IndexedDB persistence
-│   ├── models.js          # AI model management
-│   ├── search.js          # Search functionality
-│   ├── export.js          # Chat import/export
-│   ├── image-utils.js     # Image handling utilities
-│   └── ...                # Other utility modules
-└── assets/                 # Static assets (if any)
-```
 
 ## 🔧 Configuration
 
