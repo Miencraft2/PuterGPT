@@ -41,8 +41,11 @@ export function generateShareUrl(chatData) {
     try {
         const compressed = compressChatData(chatData);
         
-        // Use current origin for all environments
-        const baseUrl = window.location.origin + window.location.pathname;
+        // Check if current origin is a websim.com domain and use production URL
+        const isWebsimDomain = window.location.hostname.includes('.c.websim.com');
+        const baseUrl = isWebsimDomain 
+            ? 'https://putergpt.on.websim.com' + window.location.pathname
+            : window.location.origin + window.location.pathname;
             
         const shareUrl = `${baseUrl}#shared=${compressed}`;
 
