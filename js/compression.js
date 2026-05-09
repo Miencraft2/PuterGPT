@@ -41,14 +41,8 @@ export function generateShareUrl(chatData) {
     try {
         const compressed = compressChatData(chatData);
         
-        // Use custom origin if not localhost, otherwise keep current origin
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' ||
-                           window.location.hostname === '';
-        
-        const baseUrl = isLocalhost 
-            ? window.location.origin + window.location.pathname
-            : 'https://putergpt.on.websim.com' + window.location.pathname;
+        // Use current origin for all environments
+        const baseUrl = window.location.origin + window.location.pathname;
             
         const shareUrl = `${baseUrl}#shared=${compressed}`;
 
