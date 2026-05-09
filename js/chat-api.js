@@ -1,4 +1,4 @@
-import { streamPuterCompletion } from 'https://codegen-new.on.websim.com/?v=570/puterStream.js'; // Imported from my project "AI Code Generator"
+import { streamPuterCompletion } from 'https://noname-isaidnoname.github.io/MyAIUtilities/puterStream.js';
 import { state } from './state.js';
 import { scrollToBottom, showToast } from './ui.js';
 import { saveChatToStorage } from './storage.js';
