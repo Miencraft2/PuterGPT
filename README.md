@@ -39,32 +39,53 @@ A modern, feature-rich web-based chat application that integrates with the Puter
 
 ## 🚀 Quick Start
 
+### Live Demo
+**Access the application directly at**: https://noname-isaidnoname.github.io/PuterGPT/
+
 ### Prerequisites
 - A modern web browser (Chrome, Firefox, Safari, Edge)
 - Puter.ai API token(s)
 
-### Installation
+### First Time Setup
+1. Open the application at https://noname-isaidnoname.github.io/PuterGPT/
+2. Click "Configure Tokens" or "Quick Register (via Puter)"
+3. Enter your Puter.ai API token
+4. Select your preferred AI model
+5. Start chatting!
+
+## 🏠 Local Setup
+
+### Running Locally
+If you prefer to run the application locally:
+
 1. **Clone or Download** the repository:
    ```bash
    git clone https://github.com/noname-isaidnoname/PuterGPT.git
    cd PuterGPT
    ```
 
-2. **Open in Browser**:
-   - Simply open `index.html` in your web browser
-   - No build process or server required (static files only)
+2. **Start a Local Server**:
+   - **Using Python**:
+     ```bash
+     python -m http.server 8000
+     ```
+   - **Using Node.js**:
+     ```bash
+     npx http-server -p 8000
+     ```
+   - **Using PHP**:
+     ```bash
+     php -S localhost:8000
+     ```
 
-3. **Configure API Token**:
+3. **Open in Browser**:
+   - Navigate to `http://localhost:8000`
+
+4. **Configure API Token**:
    - Click "Settings & AI Config" in the sidebar
    - Add your Puter.ai authentication token
    - Or use "Quick Register (via Puter)" for fast setup
 
-### First Time Setup
-1. Open the application in your browser
-2. Click "Configure Tokens" or "Quick Register (via Puter)"
-3. Enter your Puter.ai API token
-4. Select your preferred AI model
-5. Start chatting!
 
 ## 🔧 Configuration
 
@@ -144,7 +165,7 @@ A modern, feature-rich web-based chat application that integrates with the Puter
 
 ### Data Storage
 - **Local Storage**: All data stored locally in IndexedDB
-- **No Server Required**: Runs entirely in your browser
+- **Client-side Application**: Runs entirely in your browser
 - **Token Security**: API tokens stored locally with encryption options
 - **Privacy**: No data sent to third parties except Puter.ai API
 
