@@ -68,6 +68,167 @@ window.filterThemeModels = () => {
     });
 };
 
+/**
+ * Safely parse a JSON string that may contain:
+ * - Markdown code fences (```json ... ```)
+ * - Unescaped control characters (literal newlines/tabs inside string values)
+ * - Extra text before/after the JSON object
+ */
+function safelyParseThemeJson(text) {
+    if (!text) return null;
+    
+    // Step 1: Strip markdown code fences (```json ... ``` or ``` ... ```)
+    let cleaned = text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
+    
+    // Step 2: Extract JSON object via balanced braces (handles nested objects)
+    // Find the first '{' and match its closing '}'
+    const firstBrace = cleaned.indexOf('{');
+    if (firstBrace === -1) return null;
+    
+    let depth = 0;
+    let inString = false;
+    let escapeNext = false;
+    let endIdx = -1;
+    
+    for (let i = firstBrace; i < cleaned.length; i++) {
+        const char = cleaned[i];
+        
+        if (escapeNext) {
+            escapeNext = false;
+            continue;
+        }
+        
+        if (inString) {
+            if (char === '\\') {
+                escapeNext = true;
+            } else if (char === '"') {
+                inString = false;
+            }
+            continue;
+        }
+        
+        if (char === '"') {
+            inString = true;
+            continue;
+        }
+        
+        if (char === '{') {
+            depth++;
+        } else if (char === '}') {
+            depth--;
+            if (depth === 0) {
+                endIdx = i + 1;
+                break;
+            }
+        }
+    }
+    
+    if (endIdx === -1) return null;
+    
+    let jsonStr = cleaned.substring(firstBrace, endIdx);
+    
+    // Step 3: Sanitize unescaped control characters within string values
+    // First, find all string values and fix literal newlines/tabs inside them
+    jsonStr = sanitizeJsonStringValues(jsonStr);
+    
+    // Step 4: Try to parse
+    try {
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        // If still failing, try a more aggressive approach:
+        // Replace all literal newlines with \n, tabs with \t, etc.
+        jsonStr = jsonStr
+            .replace(/\r\n/g, '\\n')
+            .replace(/\n/g, '\\n')
+            .replace(/\t/g, '\\t');
+        
+        try {
+            return JSON.parse(jsonStr);
+        } catch (e2) {
+            // Last resort: try to manually construct a minimal valid theme
+            // from whatever partial JSON we can salvage
+            return salvageThemeJson(jsonStr);
+        }
+    }
+}
+
+/**
+ * Sanitizes unescaped control characters (newlines, tabs) within JSON string values.
+ * This handles the case where the AI writes multi-line CSS values like gradients
+ * with literal line breaks inside them.
+ */
+function sanitizeJsonStringValues(str) {
+    let result = '';
+    let inString = false;
+    let escapeNext = false;
+    
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        
+        if (escapeNext) {
+            result += char;
+            escapeNext = false;
+            continue;
+        }
+        
+        if (inString) {
+            if (char === '\\') {
+                escapeNext = true;
+                result += char;
+            } else if (char === '"') {
+                inString = false;
+                result += char;
+            } else if (char === '\n' || char === '\r') {
+                // Replace literal newlines inside strings with \n escape sequence
+                result += '\\n';
+            } else if (char === '\t') {
+                result += '\\t';
+            } else {
+                result += char;
+            }
+        } else {
+            result += char;
+            if (char === '"') {
+                inString = true;
+            }
+        }
+    }
+    
+    return result;
+}
+
+/**
+ * Last resort: try to salvage a usable theme from broken JSON.
+ * Extracts any key-value pairs that can be parsed.
+ */
+function salvageThemeJson(str) {
+    try {
+        // Try to extract name
+        const nameMatch = str.match(/"name"\s*:\s*"([^"]*)"/);
+        const descMatch = str.match(/"description"\s*:\s*"([^"]*)"/);
+        
+        if (!nameMatch) return null;
+        
+        // Try to extract any CSS variables we can find
+        const cssVars = {};
+        const varRegex = /"(--[\w-]+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+        let match;
+        while ((match = varRegex.exec(str)) !== null) {
+            cssVars[match[1]] = match[2];
+        }
+        
+        if (Object.keys(cssVars).length === 0) return null;
+        
+        return {
+            name: nameMatch[1],
+            description: descMatch ? descMatch[1] : 'Salvaged custom theme',
+            cssVars: cssVars
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
 // Generate custom theme
 window.generateCustomTheme = async () => {
     const prompt = els.themePrompt.value.trim();
@@ -217,7 +378,11 @@ window.generateCustomTheme = async () => {
             }
         }
         
-        // Build enhanced system prompt
+        // Build enhanced system prompt - trimmed for efficiency
+        const cssContextStr = Object.entries(cssContents)
+            .map(([fileName, content]) => `\n--- ${fileName}.css ---\n${content}`)
+            .join('\n');
+            
         const systemPrompt = `You are a creative theme generation expert with full access to customize the entire PuterGPT chat application interface.
 
 CONTEXT:
@@ -231,7 +396,7 @@ ${JSON.stringify(uiStructure, null, 2)}
 ${cssFiles.join('\n')}
 
 4. ACTUAL CSS CONTENTS: Here are the current CSS files for complete context:
-${Object.entries(cssContents).map(([fileName, content]) => `\n--- ${fileName}.css ---\n${content}`).join('\n')}
+${cssContextStr}
 
 CREATIVE FREEDOM & CAPABILITIES:
 - You can create ANY visual style - from minimal to highly decorative
@@ -381,29 +546,27 @@ USER REQUEST: ${prompt}`;
         if (!response.ok) throw new Error('Failed to generate theme');
         
         const data = await response.json();
-        const themeJson = data.result?.message?.content;
+        let themeRaw = data.result?.message?.content;
         
-        if (!themeJson) {
-            throw new Error('No theme generated');
+        if (!themeRaw) {
+            // Try alternate response structures (different AI models may return differently)
+            const altContent = data.result?.content || data.choices?.[0]?.message?.content || data.message?.content;
+            if (!altContent) {
+                throw new Error('No theme generated - AI response was empty');
+            }
+            themeRaw = altContent;
         }
         
-        // Parse and validate theme
-        let theme;
-        try {
-            theme = JSON.parse(themeJson);
-        } catch (parseError) {
-            // Extract JSON from response if it contains extra text
-            const jsonMatch = themeJson.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                theme = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error('Invalid JSON response from AI');
-            }
+        // Parse and validate theme using robust parser
+        const theme = safelyParseThemeJson(themeRaw);
+        
+        if (!theme) {
+            throw new Error('Invalid JSON response from AI - could not parse theme');
         }
         
         // Validate theme structure
         if (!theme.name || !theme.cssVars) {
-            throw new Error('Invalid theme structure');
+            throw new Error('Invalid theme structure - missing name or CSS variables');
         }
         
         // Generate unique ID for custom theme
