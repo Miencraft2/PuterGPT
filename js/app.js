@@ -40,16 +40,15 @@ window.addEventListener('load', async () => {
     // Perform migration if needed
     await migrateFromLocalStorage();
 
-    // Load settings from IndexedDB
-    await import('./state.js').then(m => m.loadSettingsFromDB());
-
-    // Initialize Token Management first
-    await initializeTokenManagement();
-    
-    // Load custom themes
+    // Load custom themes FIRST so they're in themeDefinitions before settings are applied
     console.log('Loading custom themes...');
     await loadCustomThemes();
     console.log('Custom themes loaded, themeDefinitions now:', Object.keys(themeDefinitions));
+
+    await import('./state.js').then(m => m.loadSettingsFromDB());
+
+    // Initialize Token Management
+    await initializeTokenManagement();
     
     // Populate theme dropdown
     populateThemeDropdown();
