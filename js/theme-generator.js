@@ -557,6 +557,14 @@ USER REQUEST: ${prompt}`;
             themeRaw = altContent;
         }
         
+        // Check if the response was truncated (AI hit its max output limit)
+        // finish_reason === 'length' means the model stopped because it ran out of tokens,
+        // which often results in cut-off JSON. Inform the user to try a different model.
+        const finishReason = data.result?.finish_reason || data.result?.native_finish_reason;
+        if (finishReason === 'length') {
+            throw new Error('This model ran out of output capacity while generating the theme. Please try switching to a different model with larger output limits.');
+        }
+        
         // Parse and validate theme using robust parser
         const theme = safelyParseThemeJson(themeRaw);
         
