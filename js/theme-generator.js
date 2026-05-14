@@ -238,10 +238,10 @@ CREATIVE FREEDOM & CAPABILITIES:
 - Experiment with gradients, animations, shadows, and modern design trends
 - Consider accessibility, contrast, and user experience
 - You may suggest additional CSS variables beyond the standard set
-- You can create interactive effects with JavaScript (if enabled)
 - Think about the entire user journey and emotional impact
+${generateJS ? `- You can create interactive effects with JavaScript
 
-JAVASCRIPT ENHANCEMENTS (when enabled):
+JAVASCRIPT ENHANCEMENTS:
 - Use themeUtils.addClass(selector, className) to add CSS classes
 - Use themeUtils.removeClass(selector, className) to remove CSS classes
 - Use themeUtils.toggleClass(selector, className) to toggle classes
@@ -251,7 +251,7 @@ JAVASCRIPT ENHANCEMENTS (when enabled):
 - Use themeUtils.appendTo(selector, element) to add elements to DOM
 - Use themeUtils.addEventListener(selector, event, handler) for interactions
 - Use themeUtils.storage for persisting theme-specific data
-- Access to Math, Date, JSON, localStorage, sessionStorage for advanced effects
+- Access to Math, Date, JSON, localStorage, sessionStorage for advanced effects` : ''}
 
 REQUIREMENTS:
 1. Generate a valid JSON object with this structure:
@@ -339,13 +339,13 @@ DESIGN PRINCIPLES:
 - Consider how colors work together in different contexts
 - Think about the emotional impact and user comfort
 - Be creative but maintain usability
-- If using JavaScript effects, make them enhance rather than distract
+${generateJS ? `- If using JavaScript effects, make them enhance rather than distract` : `- Focus on CSS-only theme enhancements (no JavaScript)`}
 
 CRITICAL RULES:
 - Respond with ONLY the JSON object, no other text
 - All CSS values must be valid CSS strings (colors, sizes, fonts)
 - Theme name should be creative and descriptive with appropriate emoji
-- If generating JavaScript, ensure proper cleanup in onRemove
+${generateJS ? `- If generating JavaScript, ensure proper cleanup in onRemove` : `- Do NOT generate any JavaScript code in your response`}
 - Be ambitious - create something unique and memorable!
 
 USER REQUEST: ${prompt}`;
