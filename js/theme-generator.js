@@ -409,13 +409,18 @@ USER REQUEST: ${prompt}`;
         // Generate unique ID for custom theme
         const themeId = `custom-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
         
+        // Re-read custom themes from localStorage to ensure we have the latest state
+        // (in case a theme was deleted since page load)
+        const currentCustomThemes = JSON.parse(localStorage.getItem('customThemes') || '{}');
+        
         // Store custom theme
-        customThemes[themeId] = theme;
-        localStorage.setItem('customThemes', JSON.stringify(customThemes));
+        currentCustomThemes[themeId] = theme;
+        localStorage.setItem('customThemes', JSON.stringify(currentCustomThemes));
+        customThemes = currentCustomThemes;
         
         // Save to IndexedDB for persistence
         const { db } = await import('./indexeddb-storage.js');
-        await db.settings.put({ key: 'customThemes', value: customThemes });
+        await db.settings.put({ key: 'customThemes', value: currentCustomThemes });
         
         // Add to theme definitions
         themeDefinitions[themeId] = theme;
@@ -448,24 +453,37 @@ USER REQUEST: ${prompt}`;
 // Load custom themes on startup
 export async function loadCustomThemes() {
     try {
-        // Try to load from IndexedDB first
-        const { db } = await import('./indexeddb-storage.js');
-        const savedThemes = await db.settings.get('customThemes');
-        
-        if (savedThemes && savedThemes.value) {
-            customThemes = savedThemes.value;
-        } else {
-            // Fallback to localStorage
-            customThemes = JSON.parse(localStorage.getItem('customThemes') || '{}');
+        // Use localStorage as the source of truth
+        // IndexedDB writes might not always persist on first attempt (race conditions, etc.),
+        // so localStorage (which is more reliable for simple key-value storage)
+        // is treated as authoritative. IndexedDB is synced to match localStorage.
+        const localData = localStorage.getItem('customThemes');
+        let localThemes = {};
+        if (localData) {
+            try {
+                localThemes = JSON.parse(localData);
+            } catch (e) {
+                console.warn('Failed to parse localStorage customThemes, ignoring', e);
+            }
         }
+        
+        // Start with localStorage themes (deleted themes are correctly absent here)
+        customThemes = {};
+        Object.entries(localThemes).forEach(([id, theme]) => {
+            customThemes[id] = theme;
+        });
         
         // Load themes into definitions
         Object.entries(customThemes).forEach(([id, theme]) => {
             themeDefinitions[id] = theme;
         });
         
-        // Also save to localStorage as backup
+        // Sync IndexedDB to match localStorage
+        const { db } = await import('./indexeddb-storage.js');
         localStorage.setItem('customThemes', JSON.stringify(customThemes));
+        await db.settings.put({ key: 'customThemes', value: customThemes }).catch(err => {
+            console.warn('Failed to sync custom themes to IndexedDB:', err);
+        });
         
     } catch (error) {
         console.error('Failed to load custom themes:', error);
